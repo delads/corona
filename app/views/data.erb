@@ -1,0 +1,155 @@
+<div class="container">
+      
+
+      <div class="row">
+          <div class="col m4 s12">
+            <h5><%= @country.name %></h5>
+          </div>
+
+          <div class="input-field col offset-m4 m4 s12">
+            <form action="/charts/<%= @sensor.id %>">
+            <select name="compare_graph">
+              <option value="" disabled selected>Choose country</option>
+              <% @countries.each do |country| %>
+                <% if @country.id != country.id %>
+                  <option value="<%= country.id %>"><%= country.name %></option>
+                <% end %>
+              <% end %>
+            </select>
+            <label>Compare Country</label>
+            <button class="btn waves-effect waves-light right" type="submit">Compare
+            <i class="material-icons right">send</i>
+            </button>
+            </form>
+          </div>
+
+        </div>
+        
+        <div style="position: relative; height:80vh; width:80vw">
+         <canvas id="myChart"></canvas>
+         
+
+
+<script>
+var ctx = document.getElementById("myChart").getContext('2d');
+var io_data = [<% @timeseries.each do |new_daily_cases| %><%= new_daily_cases.property_value %>,<% end %> ];
+var compare_data = [<% @timeseriesCompare.each do |new_daily_cases| %><%= new_daily_cases.property_value %>,<% end %> ];
+var formatted_dates = [<% @timeseries.each do |new_daily_cases| %>"<%= new_daily_cases.time.localtime("+01:00").rfc2822 %>",<% end %> ];
+var colors = ['#5ba2df', '#e2ac00', '#59b110'];
+
+
+var data = {
+        labels: formatted_dates,
+
+        datasets: [{
+          spanGaps: false,
+          showLine: true,
+          pointStyle: 'circle',
+          label: '<%= @sensor.name %>',
+          yAxisID: 'temperature',
+          fill: 'origin',
+          backgroundColor: "rgba(55, 0, 179, 0.3)",
+          data: io_data,
+          borderColor: "rgba(55, 0, 179, 0.5)",
+          borderWidth: 1,
+        },
+        {
+          spanGaps: false,
+          showLine: true,
+          pointStyle: 'circle',
+          label: '<%= @sensorCompare.name %>',
+          yAxisID: 'pressure',
+          fill: 'origin',
+          backgroundColor: "rgba(1, 135, 134, 0.3)",
+          data: compare_data,
+          borderColor: "rgba(1, 135, 134, 0.5)",
+          borderWidth: 1,
+        }
+        ]
+      };
+
+
+      var options = {
+        layout: {
+          padding: {
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 80,
+            plugins: {
+              filler: {
+                  propagate: true
+              }
+            }
+          }
+        },
+        cubicInterpolationMode: 'default',
+        elements: {
+          point: {
+            radius: 1,
+            hoverRadius: 5,
+          }
+        },
+        hover: {
+          mode: 'index',
+          intersect: false
+        },
+         responsive: true,
+         maintainAspectRatio: false,
+        tooltips: {
+          enabled: true,
+          mode: 'index',
+          intersect: false,
+          yAlign: 'right',
+        },
+        scales: {
+          xAxes: [{
+            type: 'time',
+            time: {
+                unit: 'day',
+              displayFormats: {
+                'minute': 'HH:mm',
+                'hour': 'HH:mm',
+                'day': 'dddd',
+                'week': 'MMM DD',
+                'month': 'MMM DD',
+              }
+            },
+            display: true,
+
+            gridLines: {
+              drawOnChartArea: false,
+            }
+          }],
+          yAxes: [{
+            id: 'temperature',
+            type: 'linear',
+            position: 'left',
+          }, {
+            id: 'pressure',
+            type: 'linear',
+            position: 'right',
+          }]
+        }
+      };  // end of options
+
+      var linectx = document.getElementById('myChart').getContext('2d');
+        var lineChart = new Chart(ctx, {
+            type: 'line',
+            data: data,
+            responsive: true,
+            options: options
+        });
+
+</script>
+   </div>
+
+</div>
+
+<script>
+        $(document).ready(function(){
+    $('.sidenav').sidenav();
+    $('select').formSelect();
+  });
+ </script>
+
